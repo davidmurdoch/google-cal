@@ -1,16 +1,21 @@
 @import "vars.less";
 @import "animations.less";
 
-html,body{
+html, body{
     font-family:"RobotoDraft","Roboto",sans-serif;
     margin:0;
     padding:0;
     overflow:hidden;
     height:100%;
     width:100%;
+    // remove mobile safari's tap highlight color
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 .signin {
     display:none;
+    body.loading & {
+        display:block;
+    }
 }
 .app{
     display:block;
@@ -19,18 +24,12 @@ html,body{
     overflow:auto;
     display:flex;
     flex-direction:column;
-
-}
-body.loading{
-    .signin {
-        display:block;
-    }
-    .app{
+    body.loading &{
         display:none;
     }
 }
 
-a{
+a {
     text-decoration:none;
 }
 
@@ -57,7 +56,7 @@ a{
             position:relative;
         }
 
-        .no-touch a:hover, a:active{
+        .no-touch a:hover, a:active {
             background:@active-box-color;
         }
         .menu-link {
@@ -67,6 +66,7 @@ a{
             flex-grow: 1;
             opacity:1;
             transition:opacity @transition-speed ease, visibility 0 linear @transition-speed;
+
             .month-name {
                 color:@pop-text-color;
                 font-weight:bold;
@@ -74,7 +74,8 @@ a{
                 line-height:2.44em;
                 display:block;
                 position:relative;
-                .icon{
+
+                .icon {
                     color:@icon-color;
                     transform:rotate(0);
                     transition: transform @transition-speed ease;
@@ -83,46 +84,128 @@ a{
             }
         }
     }
-    .miniCalendar{
+    .miniCalendar {
         height:0;
         transition: height @transition-speed ease;
         overflow:hidden;
         font-size:1em;
 
-        display:flex;
-        flex-wrap:wrap;
         max-width:50em;
-        .day {
-            width: 14%;
-            text-align:center;
-            margin:.5em 0;
+
+        .miniCalendar-content{
+            -moz-flex-wrap:wrap;
+            -webkit-flex-wrap:wrap;
+            flex-wrap:wrap;
+
+            .day {
+                width: 14%;
+                text-align:center;
+                margin:.5em 0;
+                &.highlight .day-label {
+                    background:@bright-blue;
+                    border-color:@bright-blue;
+                    color:white;
+                }
+            }
+            .day-label {
+                text-align:center;
+                margin:auto;
+                padding:.25em;
+                border-radius:100%;
+                width:1.5em;
+                height:1.5em;
+                line-height:1.5em;
+                line-height:1.5em;
+                font-size:.75em;
+                border:solid 1px transparent;
+                // polymer doesn't like tiny buttons like this one.
+                min-width:0;
+                // polymer adds border-box to this, screwing things up, put it back.
+                -webkit-box-sizing: content-box;
+                -moz-box-sizing: content-box;
+                box-sizing: content-box;
+
+                &.with-event {
+                    border-color: initial;
+                }
+                /deep/ .button-content{
+                    // polymer wants to pad out our content, stop it
+                    padding:0;
+                }
+            }
         }
-        .day-label {
-            text-align:center;
-            margin:auto;
-            padding:.25em;
-            border-radius:50%;
-            width:1.5em;
-            height:1.5em;
-            line-height:1.5em;
-            line-height:1.5em;
-            font-size:.75em;
-            .with-event{
-                border:solid 1px @shadow-border-color;
+    }
+    .miniCalendar-content, .monthSelector{
+        -moz-display:flex;
+        -webkit-display:flex;
+        display:flex;
+    }
+    .monthSelector > *{
+        flex-grow:1;
+    }
+    &.open-calendar .icon {
+        transform:rotate(180deg) !important;
+    }
+
+    &.open-menu {
+        > .top-header-initial > *:not(.menu-link) {
+            opacity:0;
+            visibility:hidden;
+        }
+        + .menu {
+            background:rgba(0,0,0,.5);
+            z-index:11;
+            visibility:visible;
+            transition:background @transition-speed ease, visibility 0 linear 0;
+
+            > ul {
+                transform: translate(0, 0);
             }
         }
     }
 }
-.top-header.open-calendar .icon{
-    transform:rotate(180deg) !important;
+
+.events-container{
+    padding:0;
+    margin:1em;
+    list-style:none;
+    > li{
+        .day {
+            display:flex;
+        }
+        .day-label{
+            min-width:3em;
+        }
+        .day-label-number{
+            font-size:2em;
+            color:@big-text-color;
+        }
+        .day-label-day{
+            color:@big-text-color;
+            font-size:.9em;
+            flex-grow:1;
+        }
+    }
+    .events{
+        list-style:none;
+        padding:0;
+        flex-grow:1;
+        margin-bottom:2em;
+        .event{
+            padding:.7em;
+            font-size:.85em;
+            border-radius:3px;
+            background:@turquoise;
+            color:#fff;
+            margin-bottom:.75em;
+            .summary{
+                font-weight:bold;
+            }
+        }
+    }
 }
 
-.top-header.open-menu > .top-header-initial > *:not(.menu-link) {
-    opacity:0;
-    visibility:hidden;
-}
-
-.menu{
+.menu {
     display:block;
     visibility:hidden;
     overflow:hidden;
@@ -148,15 +231,6 @@ a{
         margin:0;
         transform: translate(-100%, 0);
     }
-}
-.top-header.open-menu + .menu{
-    background:rgba(0,0,0,.5);
-    z-index:11;
-    visibility:visible;
-    transition:background @transition-speed ease, visibility 0 linear 0;
-}
-.top-header.open-menu + .menu > ul{
-    transform: translate(0, 0);
 }
 
 .main {
@@ -192,8 +266,9 @@ a{
     box-shadow:0 2px 5px 0 rgba(0, 0, 0, 0.26);
     z-index:10;
     transition:box-shadow @transition-speed ease, background @transition-speed ease;
-}
-.no-touch .add-button:hover, .add-button:active{
-    background:#A33228;
-    box-shadow:0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    .no-touch &:hover,
+    &:active{
+        background:#A33228;
+        box-shadow:0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
 }
