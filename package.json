@@ -1,0 +1,11 @@
+{
+  "name": "google-cal",
+  "version": "0.0.1",
+  "main": "server.js",
+  "author": "David Murdoch <david@davidmurdoch.com>",
+  "dependencies": {
+    "async": "~0.2.8",
+    "express": "^3.2.6",
+    "express-less": "^0.0.5"
+  }
+}

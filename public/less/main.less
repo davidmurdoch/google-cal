@@ -1,0 +1,199 @@
+@import "vars.less";
+@import "animations.less";
+
+html,body{
+    font-family:"RobotoDraft","Roboto",sans-serif;
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    height:100%;
+    width:100%;
+}
+.signin {
+    display:none;
+}
+.app{
+    display:block;
+    height:100%;
+    width:100%;
+    overflow:auto;
+    display:flex;
+    flex-direction:column;
+
+}
+body.loading{
+    .signin {
+        display:block;
+    }
+    .app{
+        display:none;
+    }
+}
+
+a{
+    text-decoration:none;
+}
+
+.top-header {
+    position:relative;
+    z-index:10;
+    background:#fff;
+    border-bottom:solid 1px @shadow-border-color;
+    min-height:3em;
+    flex-shrink:0;
+    .top-header-initial{
+        display: flex;
+        justify-content: space-between;
+        > * {
+            display:inline-block;
+        }
+        .menu-link, .refresh-link {
+            color:@menu-color;
+            display:block;
+            text-align:center;
+            padding:.75em;
+            line-height:1em;
+            transition:opacity @transition-speed ease, visibility 0 linear @transition-speed; // set the delay to the transision speed of opacity in order to mek the object unclickable
+            position:relative;
+        }
+
+        .no-touch a:hover, a:active{
+            background:@active-box-color;
+        }
+        .menu-link {
+            padding:.75em 1.25em .75em .75em;
+        }
+        .month {
+            flex-grow: 1;
+            opacity:1;
+            transition:opacity @transition-speed ease, visibility 0 linear @transition-speed;
+            .month-name {
+                color:@pop-text-color;
+                font-weight:bold;
+                font-size:1.25em;
+                line-height:2.44em;
+                display:block;
+                position:relative;
+                .icon{
+                    color:@icon-color;
+                    transform:rotate(0);
+                    transition: transform @transition-speed ease;
+                    margin-top:-.25em;
+                }
+            }
+        }
+    }
+    .miniCalendar{
+        height:0;
+        transition: height @transition-speed ease;
+        overflow:hidden;
+        font-size:1em;
+
+        display:flex;
+        flex-wrap:wrap;
+        max-width:50em;
+        .day {
+            width: 14%;
+            text-align:center;
+            margin:.5em 0;
+        }
+        .day-label {
+            text-align:center;
+            margin:auto;
+            padding:.25em;
+            border-radius:50%;
+            width:1.5em;
+            height:1.5em;
+            line-height:1.5em;
+            line-height:1.5em;
+            font-size:.75em;
+            .with-event{
+                border:solid 1px @shadow-border-color;
+            }
+        }
+    }
+}
+.top-header.open-calendar .icon{
+    transform:rotate(180deg) !important;
+}
+
+.top-header.open-menu > .top-header-initial > *:not(.menu-link) {
+    opacity:0;
+    visibility:hidden;
+}
+
+.menu{
+    display:block;
+    visibility:hidden;
+    overflow:hidden;
+    position:absolute;
+    left:0;
+    top:3em;
+    border-top:solid 1px @shadow-border-color; // without this top transparent border we'll hide the header's bottom border
+    right:0;
+    bottom:0;
+    background:rgba(0,0,0,0);
+    transition:background @transition-speed ease, visibility 0 linear @transition-speed, z-index 0 linear @transition-speed;
+    z-index:1;
+    > ul{
+        display:block;
+        position:absolute;
+        left:0;
+        top:0;
+        right:4em;
+        bottom:0;
+        background:#fff;
+        transition:transform @transition-speed ease;
+        z-index:99;
+        margin:0;
+        transform: translate(-100%, 0);
+    }
+}
+.top-header.open-menu + .menu{
+    background:rgba(0,0,0,.5);
+    z-index:11;
+    visibility:visible;
+    transition:background @transition-speed ease, visibility 0 linear 0;
+}
+.top-header.open-menu + .menu > ul{
+    transform: translate(0, 0);
+}
+
+.main {
+    overflow:auto;
+    position:relative;
+    z-index:10;
+    flex-grow:1;
+    .loading-spinner {
+        position: fixed;
+        margin: .5em auto;
+        left: 0;
+        right: 0;
+        padding:.5em;
+        background:@active-box-color;
+        border-radius:100%;
+        box-shadow:0 2px 5px 0 rgba(0, 0, 0, 0.26);
+        opacity:0;
+        transition:opacity @transition-speed ease;
+    }
+    .loading-spinner[active] {
+        opacity:1;
+    }
+}
+
+.day-label{
+    color:@big-text-color;
+}
+
+.add-button {
+    position:absolute;
+    right:1.75em;
+    bottom:2em;
+    box-shadow:0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    z-index:10;
+    transition:box-shadow @transition-speed ease, background @transition-speed ease;
+}
+.no-touch .add-button:hover, .add-button:active{
+    background:#A33228;
+    box-shadow:0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}

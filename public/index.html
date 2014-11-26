@@ -1,0 +1,241 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Mobiquity Coding Challenge</title>
+        <meta name="description" content="Mobiquity Coding Challenge - Creating a Google Calendar site">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+        <link rel="apple-touch-icon" href="apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/responsive.css">
+        <link rel="stylesheet" href="css/helpers.css">
+
+        <script src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+        <link rel="import" href="bower_components/font-roboto/roboto.html">
+        <link rel="import" href="bower_components/google-signin/google-signin.html">
+        <link rel="import" href="bower_components/google-apis/google-client-api.html">
+        <link rel="import" href="/bower_components/core-icons/core-icons.html">
+        <link rel="import" href="/bower_components/paper-spinner/paper-spinner.html">
+        <link rel="import" href="/bower_components/paper-fab/paper-fab.html">
+        <link rel="import" href="/bower_components/paper-ripple/paper-ripple.html">
+    </head>
+    <body class="loading">
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <div class="signin">
+          <google-api-loader id="calendar" name="calendar" version="v3"></google-api-loader>
+          <google-api-loader id="people" name="plus" version="v1"></google-api-loader>
+          <google-signin clientId="958040394659-deljp3i2gokm7refh602g0msh3d6hp39.apps.googleusercontent.com" scopes="https://www.googleapis.com/auth/calendar profile"></google-signin>
+        </div>
+        <div class="app">
+          <header class="top-header">
+            <div class="top-header-initial">
+                <a href="#menu" class="menu-link"><core-icon icon="menu"></core-icon><paper-ripple fit></papper-ripple></a>
+                <div class="month">
+                  <a href="#november" class="month-name">November <core-icon icon="arrow-drop-down" class="icon"></core-icon><paper-ripple fit></papper-ripple></a>
+                </div>
+                <a href="#refresh" class="refresh-link" title="Refresh"><core-icon icon="refresh"></core-icon><paper-ripple fit></paper-ripple></a>
+              </div>
+              <div class="miniCalendar">
+                Calender here
+              </div>
+          </header>
+
+          <nav class="menu">
+            <ul>
+              <li class="displayName"></li>
+              <li><google-signin clientId="958040394659-deljp3i2gokm7refh602g0msh3d6hp39.apps.googleusercontent.com"></google-signin></li>
+              <li>
+                <strong>Calendars</strong>
+                <ul class="calendars"></ul>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="main">
+            <paper-spinner class="loading-spinner"></paper-spinner>
+            <ul class="days">
+              <li>
+                <div class="day">
+                  <div class="day-label">
+                    <div class="day-label-number">2</div>
+                    <div class="day-label-day">Sun</div>
+                  </div>
+                  <ul class="events">
+                    <!--<li class="event"></li>-->
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <paper-fab icon="add" title="add" class="add-button" role="button" tabindex="0" aria-label="add"></paper-fab>
+        </div>
+
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+        <script>
+          var signedIn = false,
+            people, calendar,
+            events = $(".events"),
+            calendars = $(".calendars"),
+            miniCalendar = $(".miniCalendar"),
+            requests = {
+              "_count": 0,
+              "spinner": $( ".loading-spinner" ),
+              "start": function() {
+                requests._count++;
+                requests.spinner.attr( "active", true );
+              },
+              "end": function() {
+                if ( requests._count-- ) {
+                  requests.spinner.removeAttr( "active" );
+                }
+              },
+            };
+
+          $("google-signin").on("google-signin-success", function(){
+            if(signedIn){return;}
+            signedIn = true;
+            $("body").removeClass("loading");
+
+            getCalendarList();
+            getName();
+          }).on("google-signed-out", function(){
+            signedIn = false;
+            $("body").addClass("loading");
+          });
+
+          $("#calendar").on("google-api-load", function(){
+            calendar = this.api;
+
+            getCalendarList();
+          });
+          $("#people").on("google-api-load", function(){
+            people = this.api.people;
+            getName();
+          });
+
+          $(".refresh-link").click(function(){
+            var cal = miniCalendar.data("calendar");
+            console.log(cal);
+            if ( cal ) {
+              populateCalendar( cal );
+            }
+          });
+
+          function getName() {
+            if ( people && signedIn ) {
+              var request = people.get({
+                  'userId': 'me'
+              });
+              requests.start();
+              request.execute(function(resp) {
+                requests.end();
+                $(".displayName").text(resp.displayName);
+              });
+            }
+          }
+
+          function getCalendarList() {
+            if ( calendar && signedIn ) {
+              var request = calendar.calendarList.list({"key": ""});
+              requests.start();
+              request.execute(function(resp) {
+                requests.end();
+                calendars.empty();
+                for(var calendarList = resp.items, i = 0, l = calendarList.length; i < l; i++){
+                  var cal = calendarList[i];
+                  // todo, make this a polymer element
+                  var li = $("<li></li>");
+                  var a = $("<a href=#></a>").text(cal.summary);
+                  li.append(a);
+                  a.data("calendar", cal);
+                  calendars.append(li);
+
+                  if ( cal.primary ) {
+                    populateCalendar(cal);
+                  }
+                }
+              });
+            }
+          }
+
+          function populateCalendar( cal ) {
+
+            getEvents(cal, new Date(2014, 10, 1), new Date(2014, 11, 0), function(resp){
+              console.log(resp);
+              miniCalendar.data("calendar", cal);
+              events.empty();
+              for ( var items = resp.items, i = 0, l = items.length; i < l; i++ ) {
+                var summary = items[i].summary,
+                  start = items[i].start,
+                  msg = summary;
+
+                if ( start.dateTime ) {
+                  msg += " at " + start.dateTime;
+                }
+                else {
+                  msg += " on " + start.date;
+                }
+                if( start.timeZone ) {
+                  msg += start.timeZone;
+                }
+                var li = $("<li class=event></li>").text(msg);
+                events.append(li);
+              }
+            });
+          }
+          function getEvents(cal, start, end, callback){
+
+            var request = calendar.events.list({
+              "calendarId": cal.id,
+              "timeMin": (start.getFullYear() + "-" + (start.getMonth()+1) + "-" + start.getDate() + "T00:00:00Z"),
+              "timeMax": (end.getFullYear() + "-" + (end.getMonth()+1) + "-" + end.getDate() + "T00:00:00Z")
+            });
+            requests.start();
+            request.execute(function(){
+              requests.end();
+              callback.apply(this, arguments)
+            });
+          }
+
+
+          calendars.delegate("a", "click", function(){
+            var cal = $(this).data("calendar");
+            populateCalendar(cal);
+            $(".menu-link").click();
+          });
+
+          $(".month-name").click(function(){
+            var cal = miniCalendar;
+            if ( !$(".top-header").is(".open-calendar") ) {
+              cal.height("auto");
+              var h = cal.height();
+              cal.height(0);
+              cal.height(h);
+            }
+            else{
+              cal.height(0);
+            }
+
+            $(".top-header").toggleClass("open-calendar");
+          });
+
+          $(".menu-link").click(function(){
+            $(".top-header").toggleClass("open-menu");
+          });
+
+          $(".menu").click(function(e){
+            if ( e.target===this ) {
+              $(".menu-link").click();
+            }
+          });
+        </script>
+    </body>
+</html>
