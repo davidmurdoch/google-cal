@@ -62,7 +62,7 @@ $(function(){
   miniCalendarContent.delegate(".day-label.with-event", "click", function(){
     // close the calendar
     monthNameEl.click();
-    var timestamp = $(this).data("timestamp")
+    var timestamp = $(this).data("timestamp");
     $(".time_" + timestamp).each(function(){
        this.scrollIntoView();
     });
@@ -134,7 +134,7 @@ $(function(){
       };
     dialog.find("input").each(function(){
       var name = this.name;
-      var val = _.trim(this.value)
+      var val = _.trim(this.value);
       switch(name){
         case "title":
           event.summary = val;
@@ -297,12 +297,14 @@ $(function(){
     // add some detailed information, if appropriate
     if ( event.start.dateTime ) {
 
-      var endDetails = "";
+      var endDetails = "", endIsPM = false;
       if (event.end.dateTime){
         var endDateTime = new Date(event.end.dateTime),
-            endHours =  endDateTime.getHours(),
-            endIsPM = endHours >= 12,
-            endTime = endHours > 12 ? endHours - 12 : endHours,
+            endHours =  endDateTime.getHours();
+
+        endIsPM = endHours >= 12;
+
+        var endTime = endHours > 12 ? endHours - 12 : endHours,
             endMinutes = endDateTime.getMinutes().toString();
 
         endTime += ":" +  (endMinutes.length === 1 ? "0" : "") + endMinutes,
