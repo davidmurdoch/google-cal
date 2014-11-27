@@ -162,8 +162,11 @@ $(function(){
           populateEventList(cal);
         }, function err(res){
           requests.end();
-          if ( res.error.message ) {
+          if ( res.error && res.error.message ) {
             showToast("New event not added: " + res.error.message);
+          }
+          else{
+            showToast("An unknown error occured. Please refresh and try again.");
           }
         });
       }
